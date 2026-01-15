@@ -54,12 +54,11 @@ def send_email(sender_email, app_password, receiver_email, subject, body):
         msg['Subject'] = subject
         msg['From'] = sender_email
         msg['To'] = receiver_email
-        # Connect to Gmail Server (Change if using Yahoo/Outlook)
+        # Connect to Gmail Server
         with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp_server:
             smtp_server.login(sender_email, app_password)
             smtp_server.sendmail(sender_email, receiver_email, msg.as_string())
-    except Exception as e:
-        print(f"Email Failed: {e}")
+    except: pass
 
 @st.cache_data(ttl=60)
 def get_data(t):
@@ -133,12 +132,13 @@ if not st.session_state.authenticated:
     elif pwd: st.sidebar.error("ACCESS DENIED")
     st.stop()
 
-page = st.sidebar.radio("CHOOSE MODE:", ["📊 DASHBOARD (Charts)", "🚨 LIVE SCANNER (Alerts)"])
+# THIS IS THE TAB SYSTEM (Page Switcher)
+page = st.sidebar.radio("CHOOSE MODE:", ["📊 DASHBOARD (Analysis)", "🚨 LIVE SCANNER (Alerts)"])
 
 # ---------------------------------------------------------
-# PAGE 1: THE OLD DASHBOARD STYLE (Restored)
+# PAGE 1: THE DASHBOARD (Exactly like Old Style)
 # ---------------------------------------------------------
-if page == "📊 DASHBOARD (Charts)":
+if page == "📊 DASHBOARD (Analysis)":
     
     # Stock Selection
     c1, c2 = st.columns([1, 2])
@@ -183,7 +183,7 @@ if page == "📊 DASHBOARD (Charts)":
         p5.markdown(f"<div class='pivot-box'>R2<br><b>{round(r['R2'],2)}</b></div>", unsafe_allow_html=True)
         
         # ROW 4: Moving Averages
-        st.markdown("<b>KEY MOVING AVERAGES</b>", unsafe_allow_html=True)
+        st.markdown("<b>KEY MOVING AVERAGES (TREND SUPPORT)</b>", unsafe_allow_html=True)
         s_col1, s_col2, s_col3, s_col4, s_col5 = st.columns(5)
         sma = r['SMA']
         def sma_clr(val): return "green" if r['LTP'] > val else "red"
@@ -205,7 +205,7 @@ if page == "📊 DASHBOARD (Charts)":
         st.error("STOCK NOT FOUND")
 
 # ---------------------------------------------------------
-# PAGE 2: LIVE SCANNER (Auto-Refresh + Email)
+# PAGE 2: LIVE SCANNER (Auto-Refresh + Alerts)
 # ---------------------------------------------------------
 elif page == "🚨 LIVE SCANNER (Alerts)":
     st.title("🚨 LIVE WATCHLIST SCANNER")
