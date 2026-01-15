@@ -26,11 +26,10 @@ if not st.session_state.authenticated:
     elif user_pass: st.sidebar.error("WRONG PASSWORD")
     st.stop()
 
-# 4. BIG FONT CSS (NO EMOJIS)
+# 4. CSS STYLING
 st.markdown("""<style>
     .stApp { background-color: #ffffff; color: #000000; font-size: 14px !important; }
     h1 { font-size: 28px !important; margin: 0px !important; padding-bottom: 10px !important; }
-    h3 { font-size: 20px !important; }
     .mini-box { background-color: #f0f2f6; border: 1px solid #dce1e6; padding: 10px; border-radius: 8px; text-align: center; font-size: 14px; margin-bottom: 8px; }
     .mini-box b { font-size: 20px; color: #000; font-weight: 800; }
     .pivot-box { background-color: #fff3e0; border: 1px solid #ffe0b2; padding: 8px; border-radius: 5px; text-align: center; font-size: 14px; margin-bottom: 5px; }
@@ -48,6 +47,7 @@ st.markdown("""<style>
     label { font-size: 14px !important; color: #000 !important; font-weight: bold !important; }
 </style>""", unsafe_allow_html=True)
 
+# 5. DATA FUNCTIONS
 STOCK_DICT = {"NIFTY 50":"^NSEI","BANK NIFTY":"^NSEBANK","FIN NIFTY":"NIFTY_FIN_SERVICE.NS","Reliance":"RELIANCE.NS","HDFC Bank":"HDFCBANK.NS","ICICI Bank":"ICICIBANK.NS","Infosys":"INFY.NS","TCS":"TCS.NS","ITC":"ITC.NS","L&T":"LT.NS","Axis Bank":"AXISBANK.NS","Kotak Bank":"KOTAKBANK.NS","SBI":"SBIN.NS","Bharti Airtel":"BHARTIARTL.NS","Bajaj Finance":"BAJFINANCE.NS","Asian Paints":"ASIANPAINT.NS","Maruti":"MARUTI.NS","HCL Tech":"HCLTECH.NS","Sun Pharma":"SUNPHARMA.NS","Titan":"TITAN.NS","M&M":"M&M.NS","UltraTech":"ULTRACEMCO.NS","Tata Steel":"TATASTEEL.NS","NTPC":"NTPC.NS","Power Grid":"POWERGRID.NS","Wipro":"WIPRO.NS","Adani Ent":"ADANIENT.NS","Adani Ports":"ADANIPORTS.NS","Tata Motors":"TATAMOTORS.NS","Coal India":"COALINDIA.NS","Hindalco":"HINDALCO.NS","Eicher Motors":"EICHERMOT.NS","Dr Reddy":"DRREDDY.NS","BPCL":"BPCL.NS","Nestle":"NESTLEIND.NS","Grasim":"GRASIM.NS","Hero Moto":"HEROMOTOCO.NS","Tech M":"TECHM.NS","Cipla":"CIPLA.NS","Apollo Hosp":"APOLLOHOSP.NS","Tata Cons":"TATACONSUM.NS","Divis Lab":"DIVISLAB.NS","Bajaj Auto":"BAJAJ-AUTO.NS","Jio Finance":"JIOFIN.NS","Trent":"TRENT.NS","BEL":"BEL.NS","HAL":"HAL.NS","Zomato":"ZOMATO.NS","DLF":"DLF.NS","Varun Bev":"VBL.NS","Siemens":"SIEMENS.NS","ABB":"ABB.NS","Indigo":"INDIGO.NS","Polycab":"POLYCAB.NS","REC":"REC.NS","PFC":"PFC.NS","Canara Bank":"CANBK.NS","PNB":"PNB.NS","Union Bank":"UNIONBANK.NS","Bank Baroda":"BANKBARODA.NS","IRFC":"IRFC.NS","RVNL":"RVNL.NS","Mazagon":"MAZDOCK.NS","Cochin Ship":"COCHINSHIP.NS","BHEL":"BHEL.NS","SAIL":"SAIL.NS","NMDC":"NMDC.NS","Vedanta":"VEDL.NS","Hind Zinc":"HINDZINC.NS","JSW Steel":"JSWSTEEL.NS","Jindal Steel":"JINDALSTEL.NS","Tata Power":"TATAPOWER.NS","Adani Power":"ADANIPOWER.NS","GAIL":"GAIL.NS","ONGC":"ONGC.NS","Oil India":"OIL.NS","Motherson":"MOTHERSON.NS","Bosch":"BOSCHLTD.NS","TVS Motor":"TVSMOTOR.NS","MRF":"MRF.NS","Samvardhana":"MOTHERSON.NS"}
 SYMBOL_TO_NAME = {v: k for k, v in STOCK_DICT.items()}
 
@@ -71,7 +71,6 @@ def get_techs(h):
     tr=h['TR'].rolling(14).mean(); pdi=100*(h['+DM'].rolling(14).mean()/tr); mdi=100*(h['-DM'].rolling(14).mean()/tr)
     dx=100*abs(pdi-mdi)/(pdi+mdi); adx=dx.rolling(14).mean().iloc[-1]
     
-    # SMART MONEY (LONG/SHORT BUILDUP)
     v_avg = h['Volume'].rolling(10).mean().iloc[-1]; v_now = h['Volume'].iloc[-1]
     pc = h['Close'].iloc[-1] - h['Close'].iloc[-2]
     
@@ -91,96 +90,3 @@ def get_techs(h):
     return h['RSI'].iloc[-1], h['Close'].rolling(20).mean().iloc[-1], smc, adx, m_res, m_sup, r1, s1, r2, s2, sma10, sma20, sma50, sma100, sma200
 
 def analyze(t):
-    l,h=get_data(t)
-    if l is None: return None
-    pd_=h.iloc[-2]; td=h.iloc[-1]; dp=(pd_['High']+pd_['Low']+pd_['Close'])/3; vw=(td['High']+td['Low']+td['Close'])/3
-    sig="WAIT"
-    if l>dp and l>vw and l>pd_['Low']: sig="BUY"
-    elif l<dp and l<vw and l<pd_['High']: sig="SELL"
-    return {"Symbol":t,"LTP":l,"Signal":sig}
-
-st.sidebar.header("CONTROLS")
-selected_name = st.sidebar.selectbox("SELECT FROM LIST:", list(STOCK_DICT.keys()), index=list(STOCK_DICT.keys()).index(st.session_state.selected_stock) if st.session_state.selected_stock in STOCK_DICT else 0)
-
-manual_search = st.sidebar.text_input("OR TYPE SYMBOL (Ex: TRENT):")
-if manual_search: st.session_state.selected_stock = manual_search.upper()
-else: st.session_state.selected_stock = selected_name
-
-if st.sidebar.button("REFRESH DATA"): st.cache_data.clear(); st.session_state.scan_buy_list=[]; st.session_state.scan_sell_list=[]; st.session_state.scan_rev_list=[]; st.rerun()
-
-st.sidebar.subheader("SCANNER")
-c_s1, c_s2 = st.sidebar.columns(2)
-f_list = [v for k,v in STOCK_DICT.items() if not k.endswith("NIFTY")]
-
-if c_s1.button("BUY SCAN"):
-    st.session_state.scan_buy_list = []; st.session_state.scan_sell_list = []; st.session_state.scan_rev_list = []
-    for s in f_list:
-        r=analyze(s)
-        if r and r["Signal"]=="BUY": st.session_state.scan_buy_list.append(r)
-    st.rerun()
-
-if c_s2.button("SELL SCAN"):
-    st.session_state.scan_buy_list = []; st.session_state.scan_sell_list = []; st.session_state.scan_rev_list = []
-    for s in f_list:
-        r=analyze(s)
-        if r and r["Signal"]=="SELL": st.session_state.scan_sell_list.append(r)
-    st.rerun()
-
-if st.sidebar.button("REVERSAL SCAN"):
-    st.session_state.scan_buy_list = []; st.session_state.scan_sell_list = []; st.session_state.scan_rev_list = []
-    for s in f_list:
-        l, h = get_data(s)
-        if l is not None:
-            pd = h.iloc[-2]; dp = (pd['High']+pd['Low']+pd['Close'])/3
-            ba = dp * 1.001; sb = dp * 0.999
-            t5_b = (math.sqrt(ba) + (5 * 0.125))**2 # Buy Tgt 5
-            t5_s = (math.sqrt(sb) - (5 * 0.125))**2 # Sell Tgt 5
-            if l >= t5_b: st.session_state.scan_rev_list.append({"Symbol":s, "LTP":l, "Type":"TOP (SELL)"})
-            elif l <= t5_s: st.session_state.scan_rev_list.append({"Symbol":s, "LTP":l, "Type":"BOTTOM (BUY)"})
-    st.rerun()
-
-if st.session_state.scan_buy_list:
-    st.sidebar.success(f"Found {len(st.session_state.scan_buy_list)} BUY")
-    for i, item in enumerate(st.session_state.scan_buy_list):
-        name = SYMBOL_TO_NAME.get(item['Symbol'], item['Symbol'])
-        # FIXED: Added unique index 'i' to key to prevent DuplicateElementKey error
-        if st.sidebar.button(f"{name} ({round(item['LTP'],1)})", key=f"btn_buy_{i}"): 
-            st.session_state.selected_stock = name; st.rerun()
-
-if st.session_state.scan_sell_list:
-    st.sidebar.error(f"Found {len(st.session_state.scan_sell_list)} SELL")
-    for i, item in enumerate(st.session_state.scan_sell_list):
-        name = SYMBOL_TO_NAME.get(item['Symbol'], item['Symbol'])
-        # FIXED: Added unique index 'i' to key to prevent DuplicateElementKey error
-        if st.sidebar.button(f"{name} ({round(item['LTP'],1)})", key=f"btn_sell_{i}"): 
-            st.session_state.selected_stock = name; st.rerun()
-
-if st.session_state.scan_rev_list:
-    st.sidebar.warning(f"Found {len(st.session_state.scan_rev_list)} REVERSAL")
-    for i, item in enumerate(st.session_state.scan_rev_list):
-        name = SYMBOL_TO_NAME.get(item['Symbol'], item['Symbol'])
-        # FIXED: Added unique index 'i' to key
-        if st.sidebar.button(f"{name} [{item['Type']}]", key=f"btn_rev_{i}"): 
-            st.session_state.selected_stock = name; st.rerun()
-
-if st.session_state.selected_stock in STOCK_DICT: ticker = STOCK_DICT[st.session_state.selected_stock]
-else: ticker = st.session_state.selected_stock + ".NS"
-
-ltp = None
-hist = None
-ltp, hist = get_data(ticker)
-price_txt = f"| Rs. {round(ltp,2)}" if ltp else ""
-st.title(f"{st.session_state.selected_stock} {price_txt}")
-
-if ltp is not None and hist is not None:
-    pd_=hist.iloc[-2]; td=hist.iloc[-1]; dp=(pd_['High']+pd_['Low']+pd_['Close'])/3; vw=(td['High']+td['Low']+td['Close'])/3
-    rsi,sma,smc,adx,m_res,m_sup,r1,s1,r2,s2,sma10,sma20,sma50,sma100,sma200 = get_techs(hist)
-    
-    sig="WAIT"; sc="wait-signal"
-    if ltp>dp and ltp>vw and ltp>pd_['Low']: sig="BUY CONFIRMED"; sc="buy-signal"
-    elif ltp<dp and ltp<vw and ltp<pd_['High']: sig="SELL CONFIRMED"; sc="sell-signal"
-    st.markdown(f"<div class='{sc}'>{sig}</div>", unsafe_allow_html=True)
-
-    # ROW 1
-    k1,k2,k3,k4 = st.columns(4)
-    k1.markdown(f"<div class='mini-box'>L
