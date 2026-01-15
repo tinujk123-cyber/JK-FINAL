@@ -12,7 +12,6 @@ ACCESS_PASSWORD = "JK2026"
 # 2. SESSION STATE
 if 'authenticated' not in st.session_state: st.session_state.authenticated = False
 if 'selected_stock' not in st.session_state: st.session_state.selected_stock = "NIFTY 50"
-# Initialize scanner lists to prevent errors
 if 'scan_buy_list' not in st.session_state: st.session_state.scan_buy_list = []
 if 'scan_sell_list' not in st.session_state: st.session_state.scan_sell_list = []
 if 'scan_rev_list' not in st.session_state: st.session_state.scan_rev_list = []
@@ -27,21 +26,25 @@ if not st.session_state.authenticated:
     elif user_pass: st.sidebar.error("WRONG PASSWORD")
     st.stop()
 
-# 4. CSS STYLING
+# 4. COMPACT CSS STYLING (SMALLER & TIGHTER)
 st.markdown("""<style>
-    .stApp { background-color: #ffffff; color: #000000; font-size: 14px !important; }
-    h1 { font-size: 28px !important; margin: 0px !important; padding-bottom: 10px !important; }
-    .mini-box { background-color: #f0f2f6; border: 1px solid #dce1e6; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 8px; }
-    .mini-box b { font-size: 20px; color: #000; }
-    .pivot-box { background-color: #fff3e0; border: 1px solid #ffe0b2; padding: 8px; border-radius: 5px; text-align: center; margin-bottom: 5px; }
-    .buy-signal { background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px; text-align: center; font-size: 22px; font-weight: bold; border: 2px solid #28a745; margin: 10px 0; }
-    .sell-signal { background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; text-align: center; font-size: 22px; font-weight: bold; border: 2px solid #dc3545; margin: 10px 0; }
-    .wait-signal { background-color: #e2e3e5; color: #383d41; padding: 10px; border-radius: 5px; text-align: center; font-size: 22px; font-weight: bold; border: 2px solid #d6d8db; margin: 10px 0; }
-    .plan-box-buy { border: 2px solid #28a745; padding: 10px; border-radius: 8px; background-color: #f0fff4; color: #000; }
-    .plan-box-sell { border: 2px solid #dc3545; padding: 10px; border-radius: 8px; background-color: #fff5f5; color: #000; }
-    .reverse-warn { color: #ffffff; background-color: #ff0000; font-weight: bold; text-align: center; padding: 5px; border-radius: 4px; margin-top: 5px; }
-    .sma-box { border: 1px solid #ddd; padding: 5px; border-radius: 5px; text-align: center; font-size: 12px; }
-    div[data-testid="column"] button { padding: 5px 10px !important; min-height: 35px !important; }
+    .stApp { background-color: #ffffff; color: #000000; font-size: 12px !important; }
+    h1 { font-size: 22px !important; margin: 0px !important; padding-bottom: 5px !important; }
+    div.block-container { padding-top: 2rem !important; padding-bottom: 1rem !important; }
+    .mini-box { background-color: #f0f2f6; border: 1px solid #dce1e6; padding: 5px; border-radius: 6px; text-align: center; font-size: 12px; margin-bottom: 4px; }
+    .mini-box b { font-size: 16px; color: #000; font-weight: 700; }
+    .pivot-box { background-color: #fff3e0; border: 1px solid #ffe0b2; padding: 4px; border-radius: 4px; text-align: center; font-size: 11px; margin-bottom: 3px; }
+    .pivot-box b { font-size: 14px; }
+    .buy-signal { background-color: #d4edda; color: #155724; padding: 5px; border-radius: 5px; text-align: center; font-size: 18px; font-weight: bold; border: 1px solid #28a745; margin: 5px 0; }
+    .sell-signal { background-color: #f8d7da; color: #721c24; padding: 5px; border-radius: 5px; text-align: center; font-size: 18px; font-weight: bold; border: 1px solid #dc3545; margin: 5px 0; }
+    .wait-signal { background-color: #e2e3e5; color: #383d41; padding: 5px; border-radius: 5px; text-align: center; font-size: 18px; font-weight: bold; border: 1px solid #d6d8db; margin: 5px 0; }
+    .plan-box-buy { border: 1px solid #28a745; padding: 6px; border-radius: 6px; background-color: #f0fff4; color: #000; font-size: 13px; }
+    .plan-box-sell { border: 1px solid #dc3545; padding: 6px; border-radius: 6px; background-color: #fff5f5; color: #000; font-size: 13px; }
+    .reverse-warn { color: #ffffff; background-color: #ff0000; font-weight: bold; text-align: center; padding: 2px; border-radius: 3px; font-size: 11px; margin-top: 3px; }
+    .sma-box { border: 1px solid #ddd; padding: 3px; border-radius: 4px; text-align: center; font-size: 11px; }
+    .sma-box b { font-size: 13px; }
+    hr { margin: 3px 0px !important; }
+    div[data-testid="column"] button { padding: 2px 8px !important; min-height: 28px !important; font-size: 12px !important; }
 </style>""", unsafe_allow_html=True)
 
 # 5. DATA FUNCTIONS
@@ -70,7 +73,6 @@ def get_techs(h):
     elif pc < 0 and v_now < v_avg: smc = "LONG UNWINDING"
     else: smc = "NEUTRAL"
 
-    # ADX Calculation
     h['H-L']=h['High']-h['Low']; h['H-C']=abs(h['High']-h['Close'].shift(1)); h['L-C']=abs(h['Low']-h['Close'].shift(1))
     h['TR']=h[['H-L','H-C','L-C']].max(axis=1)
     h['UM']=h['High']-h['High'].shift(1); h['DM']=h['Low'].shift(1)-h['Low']; h['+DM']=0; h['-DM']=0
@@ -190,7 +192,7 @@ st.title(f"{st.session_state.selected_stock} {price_txt}")
 if ltp is not None and hist is not None:
     pd_=hist.iloc[-2]; td=hist.iloc[-1]; dp=(pd_['High']+pd_['Low']+pd_['Close'])/3; vw=(td['High']+td['Low']+td['Close'])/3
     rsi,sma,smc,adx,r1,s1,r2,s2,sma10,sma20,sma50,sma100,sma200 = get_techs(hist)
-    r = analyze(ticker) # Get Full Analysis Data
+    r = analyze(ticker) 
     
     # 1. SIGNAL BANNER
     sc = "wait-signal"; txt = "WAIT MODE"
@@ -198,7 +200,7 @@ if ltp is not None and hist is not None:
     elif r['Signal']=="SELL": sc="sell-signal"; txt="SELL CONFIRMED"
     st.markdown(f"<div class='{sc}'>{txt}</div>", unsafe_allow_html=True)
 
-    # 2. DATA GRID (Split HTML to avoid errors)
+    # 2. DATA GRID
     k1,k2,k3,k4 = st.columns(4)
     
     html_ltp = f"<div class='mini-box'>LTP<br><b>Rs. {round(ltp,2)}</b></div>"
