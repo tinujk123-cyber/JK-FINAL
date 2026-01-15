@@ -3,22 +3,20 @@ import yfinance as yf
 import pandas as pd
 import math
 
-# ---------------------------------------------------------
 # 1. APP SETUP
-# ---------------------------------------------------------
 st.set_page_config(page_title="JK TRINETRA", layout="wide")
 ACCESS_PASSWORD = "JK2026"
 
 # 2. SESSION STATE
 if 'authenticated' not in st.session_state: st.session_state.authenticated = False
 if 'selected_stock' not in st.session_state: st.session_state.selected_stock = "NIFTY 50"
+# Initialize scanner lists to prevent errors if scanner buttons are clicked
 if 'scan_buy_list' not in st.session_state: st.session_state.scan_buy_list = []
 if 'scan_sell_list' not in st.session_state: st.session_state.scan_sell_list = []
 if 'scan_rev_list' not in st.session_state: st.session_state.scan_rev_list = []
 
 # 3. AUTHENTICATION
 st.sidebar.title("JK TRINETRA")
-
 if not st.session_state.authenticated:
     user_pass = st.sidebar.text_input("PASSWORD:", type="password")
     if user_pass == ACCESS_PASSWORD:
@@ -30,21 +28,17 @@ if not st.session_state.authenticated:
 st.markdown("""<style>
     .stApp { background-color: #ffffff; color: #000000; font-size: 14px !important; }
     h1 { font-size: 28px !important; margin: 0px !important; padding-bottom: 10px !important; }
-    .mini-box { background-color: #f0f2f6; border: 1px solid #dce1e6; padding: 10px; border-radius: 8px; text-align: center; font-size: 14px; margin-bottom: 8px; }
-    .mini-box b { font-size: 20px; color: #000; font-weight: 800; }
-    .pivot-box { background-color: #fff3e0; border: 1px solid #ffe0b2; padding: 8px; border-radius: 5px; text-align: center; font-size: 14px; margin-bottom: 5px; }
-    .pivot-box b { font-size: 16px; }
-    .sma-box { background-color: #e8f5e9; border: 1px solid #c8e6c9; padding: 8px; border-radius: 5px; text-align: center; font-size: 13px; }
-    .sma-box b { font-size: 16px; }
-    .buy-signal { background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px; font-weight: bold; text-align: center; font-size: 22px; border: 2px solid #28a745; margin: 10px 0px; }
-    .sell-signal { background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; font-weight: bold; text-align: center; font-size: 22px; border: 2px solid #dc3545; margin: 10px 0px; }
-    .wait-signal { background-color: #e2e3e5; color: #383d41; padding: 10px; border-radius: 5px; font-weight: bold; text-align: center; font-size: 22px; border: 2px solid #d6d8db; margin: 10px 0px; }
-    .plan-box-buy { border: 2px solid #28a745; padding: 10px; border-radius: 8px; background-color: #f0fff4; color: #000; font-size: 15px; }
-    .plan-box-sell { border: 2px solid #dc3545; padding: 10px; border-radius: 8px; background-color: #fff5f5; color: #000; font-size: 15px; }
-    .reverse-warn { color: #ffffff; background-color: #ff0000; font-weight: bold; text-align: center; padding: 5px; border-radius: 4px; font-size: 13px; margin-top: 5px; }
-    .disclaimer-box { background-color: #fff3cd; padding: 12px; border-radius: 5px; border: 1px solid #ffecb5; color: #856404; font-size: 12px; text-align: center; width: 100%; margin-top: 20px; }
-    div[data-testid="column"] button { padding: 5px 10px !important; min-height: 35px !important; font-size: 14px !important; }
-    label { font-size: 14px !important; color: #000 !important; font-weight: bold !important; }
+    .mini-box { background-color: #f0f2f6; border: 1px solid #dce1e6; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 8px; }
+    .mini-box b { font-size: 20px; color: #000; }
+    .pivot-box { background-color: #fff3e0; border: 1px solid #ffe0b2; padding: 8px; border-radius: 5px; text-align: center; margin-bottom: 5px; }
+    .buy-signal { background-color: #d4edda; color: #155724; padding: 10px; border-radius: 5px; text-align: center; font-size: 22px; font-weight: bold; border: 2px solid #28a745; margin: 10px 0; }
+    .sell-signal { background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; text-align: center; font-size: 22px; font-weight: bold; border: 2px solid #dc3545; margin: 10px 0; }
+    .wait-signal { background-color: #e2e3e5; color: #383d41; padding: 10px; border-radius: 5px; text-align: center; font-size: 22px; font-weight: bold; border: 2px solid #d6d8db; margin: 10px 0; }
+    .plan-box-buy { border: 2px solid #28a745; padding: 10px; border-radius: 8px; background-color: #f0fff4; color: #000; }
+    .plan-box-sell { border: 2px solid #dc3545; padding: 10px; border-radius: 8px; background-color: #fff5f5; color: #000; }
+    .reverse-warn { color: #ffffff; background-color: #ff0000; font-weight: bold; text-align: center; padding: 5px; border-radius: 4px; margin-top: 5px; }
+    .sma-box { border: 1px solid #ddd; padding: 5px; border-radius: 5px; text-align: center; font-size: 12px; }
+    div[data-testid="column"] button { padding: 5px 10px !important; min-height: 35px !important; }
 </style>""", unsafe_allow_html=True)
 
 # 5. DATA FUNCTIONS
@@ -63,30 +57,4 @@ def get_techs(h):
     if len(h)<200: return 50,0,"Neutral",0,0,0,0,0,0,0,0,0,0,0,0,0
     
     d=h['Close'].diff(); g=(d.where(d>0,0)).rolling(14).mean(); l=(-d.where(d<0,0)).rolling(14).mean()
-    h['RSI'] = 100-(100/(1+(g/l)))
-    h['H-L']=h['High']-h['Low']; h['H-C']=abs(h['High']-h['Close'].shift(1)); h['L-C']=abs(h['Low']-h['Close'].shift(1))
-    h['TR']=h[['H-L','H-C','L-C']].max(axis=1)
-    h['UM']=h['High']-h['High'].shift(1); h['DM']=h['Low'].shift(1)-h['Low']; h['+DM']=0; h['-DM']=0
-    h.loc[(h['UM']>h['DM'])&(h['UM']>0),'+DM']=h['UM']; h.loc[(h['DM']>h['UM'])&(h['DM']>0),'-DM']=h['DM']
-    tr=h['TR'].rolling(14).mean(); pdi=100*(h['+DM'].rolling(14).mean()/tr); mdi=100*(h['-DM'].rolling(14).mean()/tr)
-    dx=100*abs(pdi-mdi)/(pdi+mdi); adx=dx.rolling(14).mean().iloc[-1]
-    
-    v_avg = h['Volume'].rolling(10).mean().iloc[-1]; v_now = h['Volume'].iloc[-1]
-    pc = h['Close'].iloc[-1] - h['Close'].iloc[-2]
-    
-    if pc > 0 and v_now > v_avg: smc = "LONG BUILDUP"
-    elif pc < 0 and v_now > v_avg: smc = "SHORT BUILDUP"
-    elif pc > 0 and v_now < v_avg: smc = "SHORT COVERING"
-    elif pc < 0 and v_now < v_avg: smc = "LONG UNWINDING"
-    else: smc = "NEUTRAL"
-
-    m_res = h['High'].iloc[-30:].max(); m_sup = h['Low'].iloc[-30:].min()
-    pd = h.iloc[-2]; p_dp = (pd['High']+pd['Low']+pd['Close'])/3
-    r1 = (2*p_dp)-pd['Low']; s1 = (2*p_dp)-pd['High']
-    r2 = p_dp + (pd['High']-pd['Low']); s2 = p_dp - (pd['High']-pd['Low'])
-    sma10 = h['Close'].rolling(10).mean().iloc[-1]; sma20 = h['Close'].rolling(20).mean().iloc[-1]
-    sma50 = h['Close'].rolling(50).mean().iloc[-1]; sma100 = h['Close'].rolling(100).mean().iloc[-1]
-    sma200 = h['Close'].rolling(200).mean().iloc[-1]
-    return h['RSI'].iloc[-1], h['Close'].rolling(20).mean().iloc[-1], smc, adx, m_res, m_sup, r1, s1, r2, s2, sma10, sma20, sma50, sma100, sma200
-
-def analyze(t):
+    h
