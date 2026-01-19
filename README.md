@@ -33,13 +33,23 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Running the Application
+### Running Locally
 
 ```bash
 streamlit run streamlit_app.py
 ```
 
 The application will open in your default web browser at `http://localhost:8501`
+
+### Deployment
+
+For deployment instructions (Streamlit Cloud, Docker, self-hosting), see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+**Key Features**:
+- ✅ GitHub repository link hidden via configuration
+- ✅ Minimal toolbar for clean UI
+- ✅ Security settings enabled
+- ✅ Privacy-focused (no telemetry)
 
 ### Authentication
 
