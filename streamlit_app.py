@@ -47,11 +47,13 @@ logger = logging.getLogger(__name__)
 def hide_streamlit_menu():
     """
     Hide Streamlit menu, GitHub link, and deploy button using CSS.
+    Also adds mobile viewport meta tag for proper mobile rendering.
     
     This function injects custom CSS to hide the hamburger menu,
     "Made with Streamlit" footer, and other Streamlit branding elements.
     """
     hide_menu_style = """
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
         <style>
         /* Hide the main menu (hamburger icon) */
         #MainMenu {visibility: hidden;}
@@ -73,6 +75,19 @@ def hide_streamlit_menu():
         
         /* Additional hiding for menu items */
         button[kind="header"] {display: none;}
+        
+        /* Mobile-specific optimizations */
+        @media (max-width: 768px) {
+            /* Ensure sidebar is collapsible */
+            [data-testid="stSidebar"][aria-expanded="true"] {
+                min-width: 280px;
+            }
+            
+            /* Optimize column stacking */
+            .row-widget.stHorizontal {
+                flex-wrap: wrap;
+            }
+        }
         </style>
     """
     st.markdown(hide_menu_style, unsafe_allow_html=True)
@@ -280,8 +295,17 @@ def render_dashboard(ticker: str, stock_name: str) -> None:
 
 def main() -> None:
     """Main application entry point."""
-    # Configure page
-    st.set_page_config(page_title=APP_TITLE, layout=PAGE_LAYOUT)
+    # Configure page with mobile optimization
+    st.set_page_config(
+        page_title=APP_TITLE,
+        layout="wide",
+        initial_sidebar_state="auto",  # Auto-collapse on mobile
+        menu_items={
+            'Get Help': None,
+            'Report a bug': None,
+            'About': None
+        }
+    )
     
     # Initialize session state
     initialize_session_state()
