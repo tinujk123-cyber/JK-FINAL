@@ -44,6 +44,40 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def hide_streamlit_menu():
+    """
+    Hide Streamlit menu, GitHub link, and deploy button using CSS.
+    
+    This function injects custom CSS to hide the hamburger menu,
+    "Made with Streamlit" footer, and other Streamlit branding elements.
+    """
+    hide_menu_style = """
+        <style>
+        /* Hide the main menu (hamburger icon) */
+        #MainMenu {visibility: hidden;}
+        
+        /* Hide the footer "Made with Streamlit" */
+        footer {visibility: hidden;}
+        
+        /* Hide the header */
+        header {visibility: hidden;}
+        
+        /* Alternative: Hide specific menu items if menu is visible */
+        [data-testid="stToolbar"] {display: none;}
+        
+        /* Hide deploy button */
+        .stDeployButton {display: none;}
+        
+        /* Hide "View app source" and GitHub links */
+        [data-testid="stAppViewBlockContainer"] > div:first-child {display: none;}
+        
+        /* Additional hiding for menu items */
+        button[kind="header"] {display: none;}
+        </style>
+    """
+    st.markdown(hide_menu_style, unsafe_allow_html=True)
+
+
 def initialize_session_state() -> None:
     """Initialize Streamlit session state variables."""
     if 'authenticated' not in st.session_state:
@@ -254,6 +288,9 @@ def main() -> None:
     
     # Apply custom CSS
     st.markdown(APP_STYLES, unsafe_allow_html=True)
+    
+    # Hide Streamlit menu and GitHub link
+    hide_streamlit_menu()
     
     # Authenticate user
     if not authenticate_user():
