@@ -5,7 +5,7 @@ A professional stock analysis application using technical indicators,
 Gann Square of Nine, and Smart Money Concepts.
 
 Author: Refactored by Senior Python Engineer
-Version: 2.0
+Version: 2.1 (Mobile Optimized)
 """
 
 import logging
@@ -47,56 +47,58 @@ logger = logging.getLogger(__name__)
 def hide_streamlit_menu():
     """
     Hide Streamlit menu, GitHub link, and deploy button using CSS.
-    Also adds mobile viewport meta tag for proper mobile rendering.
-    
-    This function injects custom CSS to hide the hamburger menu,
-    "Made with Streamlit" footer, and other Streamlit branding elements.
+    Optimized for mobile devices with proper viewport settings.
     """
-    # Add viewport meta tag separately
-    viewport_meta = """
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    """
-    st.markdown(viewport_meta, unsafe_allow_html=True)
-    
-    # Add CSS to hide menu elements
-    hide_menu_style = """
+    # Combined CSS and meta tag in one clean block
+    hide_style = """
     <style>
-        /* Hide the main menu (hamburger icon) */
-        #MainMenu {visibility: hidden;}
+        /* Hide Streamlit branding and menu */
+        #MainMenu {visibility: hidden !important;}
+        footer {visibility: hidden !important;}
+        header {visibility: hidden !important;}
         
-        /* Hide the footer "Made with Streamlit" */
-        footer {visibility: hidden;}
+        /* Hide toolbar and deploy button */
+        [data-testid="stToolbar"] {display: none !important;}
+        .stDeployButton {display: none !important;}
+        button[kind="header"] {display: none !important;}
         
-        /* Hide the header */
-        header {visibility: hidden;}
+        /* Hide GitHub/source links */
+        [data-testid="stAppViewBlockContainer"] > div:first-child {display: none !important;}
         
-        /* Alternative: Hide specific menu items if menu is visible */
-        [data-testid="stToolbar"] {display: none;}
+        /* Ensure proper mobile rendering */
+        .stApp {
+            max-width: 100% !important;
+            overflow-x: hidden !important;
+        }
         
-        /* Hide deploy button */
-        .stDeployButton {display: none;}
-        
-        /* Hide "View app source" and GitHub links */
-        [data-testid="stAppViewBlockContainer"] > div:first-child {display: none;}
-        
-        /* Additional hiding for menu items */
-        button[kind="header"] {display: none;}
-        
-        /* Mobile-specific optimizations */
+        /* Mobile optimizations */
         @media (max-width: 768px) {
-            /* Ensure sidebar is collapsible */
-            [data-testid="stSidebar"][aria-expanded="true"] {
-                min-width: 280px;
+            .stApp {
+                padding: 0 !important;
             }
             
-            /* Optimize column stacking */
+            div.block-container {
+                padding: 0.5rem !important;
+                max-width: 100% !important;
+            }
+            
+            [data-testid="stSidebar"] {
+                min-width: 280px !important;
+            }
+            
+            /* Ensure columns stack properly */
             .row-widget.stHorizontal {
-                flex-wrap: wrap;
+                flex-wrap: wrap !important;
+            }
+            
+            div[data-testid="column"] {
+                min-width: 100% !important;
+                flex: 1 1 100% !important;
             }
         }
     </style>
     """
-    st.markdown(hide_menu_style, unsafe_allow_html=True)
+    st.markdown(hide_style, unsafe_allow_html=True)
 
 
 def initialize_session_state() -> None:
