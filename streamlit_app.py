@@ -52,9 +52,15 @@ def hide_streamlit_menu():
     This function injects custom CSS to hide the hamburger menu,
     "Made with Streamlit" footer, and other Streamlit branding elements.
     """
+    # Add viewport meta tag separately
+    viewport_meta = """
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    """
+    st.markdown(viewport_meta, unsafe_allow_html=True)
+    
+    # Add CSS to hide menu elements
     hide_menu_style = """
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-        <style>
+    <style>
         /* Hide the main menu (hamburger icon) */
         #MainMenu {visibility: hidden;}
         
@@ -88,7 +94,7 @@ def hide_streamlit_menu():
                 flex-wrap: wrap;
             }
         }
-        </style>
+    </style>
     """
     st.markdown(hide_menu_style, unsafe_allow_html=True)
 
