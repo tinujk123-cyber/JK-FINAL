@@ -1,0 +1,35 @@
+# FastAPI Backend Dependencies for JK TRINETRA
+
+# Web Framework
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+
+# HTTP Client for Convex
+httpx>=0.26.0
+aiohttp>=3.9.0
+
+# Data Processing
+pandas>=2.1.0
+numpy>=1.26.0
+
+# Yahoo Finance API
+yfinance>=0.2.36
+
+# Validation and Settings
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+
+# Async Support
+asyncio-throttle>=1.0.0
+
+# Logging
+python-json-logger>=2.0.0
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# CORS
+starlette>=0.35.0
+
+# Type Hints
+typing-extensions>=4.9.0
