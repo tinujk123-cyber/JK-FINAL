@@ -7,7 +7,14 @@ import math
 # 1. APP CONFIGURATION
 # ---------------------------------------------------------
 st.set_page_config(page_title="JK TRINETRA", layout="wide")
-ACCESS_PASSWORD = "JK2026"
+
+# SECURITY: Use st.secrets for password
+# Create a file .streamlit/secrets.toml with: password = "JK2027"
+if "password" in st.secrets:
+    ACCESS_PASSWORD = st.secrets["password"]
+else:
+    # Fallback for local testing if secrets not set
+    ACCESS_PASSWORD = "JK2027"
 
 # 2. SESSION STATE
 if 'authenticated' not in st.session_state: st.session_state.authenticated = False
